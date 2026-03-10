@@ -1,36 +1,87 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Backgammon Scoreboard
 
-## Getting Started
+Two-player backgammon score tracker. The loser confirms each result with their password. Points: normal 1, gammon 2, backgammon 3.
 
-First, run the development server:
+**Stack:** Next.js (App Router), Neon Postgres, Drizzle ORM, bcryptjs, Tailwind CSS, TypeScript.
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+---
+
+## Setup
+
+### Database (Neon)
+
+1. Create a project at [neon.tech](https://neon.tech) and copy the pooled connection string.
+2. In the SQL Editor, run:
+
+```sql
+CREATE TABLE IF NOT EXISTS "players" (
+  "id" text PRIMARY KEY NOT NULL,
+  "name" text NOT NULL,
+  "created_at" timestamp NOT NULL DEFAULT now(),
+  "must_change_password" boolean NOT NULL DEFAULT true,
+  "password_hash" text
+);
+
+CREATE TABLE IF NOT EXISTS "games" (
+  "id" serial PRIMARY KEY,
+  "winner_id" text NOT NULL REFERENCES "players"("id"),
+  "loser_id" text NOT NULL REFERENCES "players"("id"),
+  "is_mars" boolean NOT NULL DEFAULT false,
+  "created_at" timestamp NOT NULL DEFAULT now(),
+  "result_type" text NOT NULL DEFAULT 'normal'
+);
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+3. Set `DATABASE_URL` in `.env.local` (see `.env.example`).
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+On first load the app inserts two players (`player1`, `player2`) if the table is empty.
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+### Local run
 
-## Learn More
+```bash
+npm install
+cp .env.example .env.local
+# Edit .env.local with your DATABASE_URL
+npm run dev
+```
 
-To learn more about Next.js, take a look at the following resources:
+Open [http://localhost:3000](http://localhost:3000).
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+### Deploy (Vercel)
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+Import the repo, add `DATABASE_URL`, deploy. Tables must already exist in Neon.
 
-## Deploy on Vercel
+---
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+## Scripts
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+| Command | Description |
+|---------|-------------|
+| `npm run dev` | Dev server |
+| `npm run build` | Production build |
+| `npm run start` | Run production build |
+
+---
+
+## API
+
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| GET | `/api/players` | List players (id, name, mustChangePassword) |
+| PATCH | `/api/players/[id]` | Update name. Body: `{ "name": "..." }`. Id: `player1` or `player2`. |
+| PATCH | `/api/players/[id]/password` | Change password. Body: `{ "currentPassword", "newPassword" }`. |
+| GET | `/api/games` | List games (last 100) |
+| POST | `/api/games` | Create game. Body: winnerId, loserId, resultType, approverId, password. |
+| DELETE | `/api/games` | Remove last game |
+| GET | `/api/stats` | Aggregated stats (wins, gammons, backgammons, points, losses per player) |
+
+Scoring: normal = 1 pt, gammon = 2 pts, backgammon = 3 pts. First-time password is `12345`; user is prompted to change it once after saving a game.
+
+---
+
+## Schema (reference)
+
+**players:** `id` (text PK), `name`, `created_at`, `must_change_password`, `password_hash`  
+**games:** `id` (serial PK), `winner_id`, `loser_id` (FK → players), `is_mars`, `created_at`, `result_type` (`'normal'|'gammon'|'backgammon'`)
+
+GIFs: `src/lib/gifs.ts`. Player names: update in DB or via PATCH above.
