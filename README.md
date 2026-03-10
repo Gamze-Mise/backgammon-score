@@ -2,6 +2,8 @@
 
 Two-player backgammon score tracker. The loser confirms each result with their password. Points: normal 1, gammon 2, backgammon 3.
 
+**Live:** [backgammon-score-seven.vercel.app](https://backgammon-score-seven.vercel.app)
+
 **Stack:** Next.js (App Router), Neon Postgres, Drizzle ORM, bcryptjs, Tailwind CSS, TypeScript.
 
 ---
