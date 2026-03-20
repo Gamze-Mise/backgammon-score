@@ -85,7 +85,7 @@ export default function StatsPanel({ refreshKey }: { refreshKey?: number }) {
     p.name;
 
   return (
-    <section className="rounded-3xl bg-gradient-to-br from-white via-amber-50 to-amber-100/70 backdrop-blur p-6 sm:p-7 shadow-xl border border-amber-200/70">
+    <section className="rounded-3xl bg-linear-to-br from-white via-amber-50 to-amber-100/80 p-6 sm:p-7 shadow-xl border border-amber-200/70">
       <div className="flex items-center justify-between mb-4">
         <h2 className="font-heading text-xl sm:text-2xl font-bold text-amber-900 flex items-center gap-2">
           <span className="text-2xl">📊</span> Statistics
@@ -98,7 +98,7 @@ export default function StatsPanel({ refreshKey }: { refreshKey?: number }) {
         </button>
       </div>
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-5">
         <div
           className={`rounded-2xl border p-4 sm:p-5 transition ${
             leader && leader.id === player1.id
@@ -149,7 +149,7 @@ export default function StatsPanel({ refreshKey }: { refreshKey?: number }) {
         </div>
       </div>
 
-      <p className="text-sm text-stone-500 mb-2">
+      <p className="text-sm text-stone-500 mb-3">
         Total games: <strong>{totalGames}</strong>
       </p>
       {leader && (

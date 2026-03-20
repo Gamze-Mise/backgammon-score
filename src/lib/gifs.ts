@@ -4,24 +4,37 @@ export const GIFS = {
     "https://media.giphy.com/media/3o7abKhOpu0NwenH3O/giphy.gif",
     "https://media.giphy.com/media/26u4cqiYI30juCOGY/giphy.gif",
     "https://media.giphy.com/media/l0MYt5jPR6QX5pnqM/giphy.gif",
-  ],
-  lose: [
-    "https://media.giphy.com/media/3o7TKsQ8MJHyTASsRy/giphy.gif",
-    "https://media.giphy.com/media/ICOgUNjpvO0PC/giphy.gif",
-    "https://media.giphy.com/media/l0HlPwMAzhN2s2s2c/giphy.gif",
+    "https://media.giphy.com/media/3o7abKhOpu0NwenH3O/giphy.gif",
+    "https://media.giphy.com/media/26u4cqiYI30juCOGY/giphy.gif",
+    "https://media.giphy.com/media/l0MYt5jPR6QX5pnqM/giphy.gif",
   ],
   mars: [
+    "https://media.giphy.com/media/12uXi1GXBbrAL2/giphy.gif",
     "https://media.giphy.com/media/26u4cqiYI30juCOGY/giphy.gif",
     "https://media.giphy.com/media/3o7abKhOpu0NwenH3O/giphy.gif",
     "https://media.giphy.com/media/12uXi1GXBbrAL2/giphy.gif",
+    "https://media.giphy.com/media/26u4cqiYI30juCOGY/giphy.gif",
+    "https://media.giphy.com/media/3o7abKhOpu0NwenH3O/giphy.gif",
   ],
   scoreEntered: [
     "https://media.giphy.com/media/3o7abKhOpu0NwenH3O/giphy.gif",
     "https://media.giphy.com/media/l0MYt5jPR6QX5pnqM/giphy.gif",
+    "https://media.giphy.com/media/26u4cqiYI30juCOGY/giphy.gif",
+    "https://media.giphy.com/media/3o7abKhOpu0NwenH3O/giphy.gif",
+    "https://media.giphy.com/media/l0MYt5jPR6QX5pnqM/giphy.gif",
+    "https://media.giphy.com/media/26u4cqiYI30juCOGY/giphy.gif",
   ],
 } as const;
 
+const previousByKey: Partial<Record<keyof typeof GIFS, string>> = {};
+
 export function getRandomGif(key: keyof typeof GIFS): string {
   const list = GIFS[key];
-  return list[Math.floor(Math.random() * list.length)];
+  const previous = previousByKey[key];
+  let next = list[Math.floor(Math.random() * list.length)];
+  while (next === previous) {
+    next = list[Math.floor(Math.random() * list.length)];
+  }
+  previousByKey[key] = next;
+  return next;
 }
