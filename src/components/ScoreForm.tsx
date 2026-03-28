@@ -108,7 +108,14 @@ export default function ScoreForm({
       <p className="mb-5 text-sm text-stone-600">
         Select the winner and confirm with the other player&apos;s password.
       </p>
-      <div className="flex flex-col gap-5">
+      <form
+        className="flex flex-col gap-5"
+        onSubmit={(e) => {
+          e.preventDefault();
+          if (loading || !winnerId || !approverPassword) return;
+          void submit();
+        }}
+      >
         <div className="rounded-2xl border border-amber-200/80 bg-white/70 p-4 sm:p-5">
           <div className="flex flex-col gap-2">
             <span className="block text-xs font-semibold text-stone-500 uppercase tracking-wide">
@@ -191,15 +198,14 @@ export default function ScoreForm({
 
         <div className="flex justify-end pt-1">
           <button
-            type="button"
-            onClick={submit}
+            type="submit"
             disabled={loading || !winnerId || !approverPassword}
             className="inline-flex items-center gap-2 rounded-2xl bg-amber-500 px-5 py-2.5 sm:px-6 sm:py-3 font-bold text-white shadow-lg hover:bg-amber-600 disabled:opacity-50 disabled:cursor-not-allowed transition-transform hover:-translate-y-0.5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-300"
           >
             <span>{loading ? "Saving…" : "Save score"}</span>
           </button>
         </div>
-      </div>
+      </form>
 
       {errorModalMessage && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/55 p-4">
