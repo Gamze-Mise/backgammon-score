@@ -9,7 +9,8 @@ const RESULT_OPTIONS: Array<{ value: ResultType; label: string }> = [
   { value: "normal", label: "Normal win (1 point)" },
   { value: "gammon", label: "Gammon (2 points)" },
 ];
-const LAST_RESORT_GIF = "https://media.giphy.com/media/3o7abKhOpu0NwenH3O/giphy.gif";
+const fallbackGif =
+  "https://media.giphy.com/media/3o7abKhOpu0NwenH3O/giphy.gif";
 
 export default function ScoreForm({
   players,
@@ -333,11 +334,11 @@ export default function ScoreForm({
             alt="Reaction"
             onError={() => {
               if (!reactionType) {
-                setReactionGif(LAST_RESORT_GIF);
+                setReactionGif(fallbackGif);
                 return;
               }
               if (gifRetryCount >= 8) {
-                setReactionGif(LAST_RESORT_GIF);
+                setReactionGif(fallbackGif);
                 return;
               }
               const fallbackType =

@@ -3,6 +3,7 @@
 import { useState, useEffect, useCallback } from "react";
 import ScoreForm from "@/components/ScoreForm";
 import StatsPanel from "@/components/StatsPanel";
+import PasswordResetTrigger from "@/components/PasswordResetTrigger";
 
 type Player = { id: string; name: string };
 
@@ -29,15 +30,18 @@ export default function Home() {
   }, []);
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-amber-50/90 to-amber-100/50">
+    <div className="min-h-screen bg-linear-to-b from-amber-50/90 to-amber-100/50">
       <header className="border-b border-amber-200/60 bg-white/70 backdrop-blur sticky top-0 z-10">
-        <div className="max-w-3xl mx-auto px-4 py-4 flex items-center justify-between">
-          <div className="flex items-center gap-3 px-3 py-2 rounded-full bg-amber-50/80 border border-amber-200/80 shadow-sm">
-            <span className="text-3xl" role="img" aria-hidden>🎲</span>
-            <h1 className="font-heading text-2xl sm:text-3xl font-bold text-amber-900">
+        <div className="max-w-3xl mx-auto px-4 py-4 flex items-center justify-between gap-3">
+          <div className="flex items-center gap-3 px-3 py-2 rounded-full bg-amber-50/80 border border-amber-200/80 shadow-sm min-w-0">
+            <span className="text-3xl shrink-0" role="img" aria-hidden>🎲</span>
+            <h1 className="font-heading text-2xl sm:text-3xl font-bold text-amber-900 truncate">
               Backgammon Scoreboard
             </h1>
           </div>
+          {players.length >= 2 ? (
+            <PasswordResetTrigger players={players} />
+          ) : null}
         </div>
       </header>
 
