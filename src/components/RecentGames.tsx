@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
+import { createPortal } from "react-dom";
 
 type GameRow = {
   id: number;
@@ -19,6 +20,7 @@ function formatResult(resultType: GameRow["resultType"]) {
 }
 
 export default function RecentGames({ refreshKey }: { refreshKey?: number }) {
+  const [mounted, setMounted] = useState(false);
   const [rows, setRows] = useState<GameRow[] | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -60,6 +62,10 @@ export default function RecentGames({ refreshKey }: { refreshKey?: number }) {
       setLoading(false);
     }
   };
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   useEffect(() => {
     void load();
@@ -166,79 +172,105 @@ export default function RecentGames({ refreshKey }: { refreshKey?: number }) {
       )}
 
       {undoOpen ? (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/55 p-4">
-          <div className="w-full max-w-sm rounded-2xl bg-white p-6 shadow-xl border border-amber-200">
-            <h3 className="font-heading text-lg font-bold text-amber-900 mb-2">
-              Undo last game
-            </h3>
-            <p className="text-sm text-stone-600 mb-4">
-              This removes the most recent game. To prevent accidental deletes, it
-              must be confirmed by the winner of the last game.
-            </p>
-
-            <form
-              className="flex flex-col gap-3"
-              onSubmit={(e) => {
-                e.preventDefault();
-                if (undoLoading || !undoPassword.trim()) return;
-                void undo();
-              }}
-            >
-              <div className="rounded-xl border border-amber-200 bg-amber-50 px-3 py-2 text-sm font-semibold text-amber-900">
-                Confirm with:{" "}
-                <span className="font-bold">
-                  {undoApproverLabel ?? "Winner"}
-                </span>
-              </div>
-
-              <div className="relative">
-                <input
-                  type={showUndoPassword ? "text" : "password"}
-                  autoComplete="off"
-                  value={undoPassword}
-                  onChange={(e) => setUndoPassword(e.target.value)}
-                  placeholder="Enter their password"
-                  className="w-full rounded-xl border border-amber-200 bg-white px-4 py-2.5 pr-12 text-sm text-stone-800 focus:border-amber-500 focus:outline-none"
-                />
-                <button
-                  type="button"
-                  onClick={() => setShowUndoPassword((v) => !v)}
-                  className="absolute right-2 top-1/2 -translate-y-1/2 rounded-lg px-2 py-1 text-xs font-bold text-stone-600 hover:bg-amber-50"
-                  aria-label={showUndoPassword ? "Hide password" : "Show password"}
-                  title={showUndoPassword ? "Hide" : "Show"}
-                >
-                  {showUndoPassword ? "🙈" : "👁️"}
-                </button>
-              </div>
-
-              {undoError ? (
-                <p className="text-sm font-semibold text-red-600">{undoError}</p>
-              ) : null}
-
-              <div className="flex gap-2 justify-end mt-2">
-                <button
-                  type="button"
-                  onClick={() => {
+        mounted
+          ? createPortal(
+              <div
+                className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/60 backdrop-blur-sm p-4"
+                role="dialog"
+                aria-modal="true"
+                aria-labelledby="undo-last-title"
+                onClick={(e) => {
+                  if (e.target === e.currentTarget) {
                     setUndoOpen(false);
                     setUndoError(null);
                     setUndoPassword("");
                     setShowUndoPassword(false);
-                  }}
-                  className="rounded-xl border border-amber-200 px-4 py-2 text-sm font-semibold text-stone-600 hover:bg-amber-50"
+                  }
+                }}
+              >
+                <div
+                  className="w-full max-w-sm rounded-2xl bg-white p-6 shadow-2xl border border-amber-200"
+                  onClick={(e) => e.stopPropagation()}
                 >
-                  Cancel
-                </button>
-                <button
-                  type="submit"
-                  disabled={undoLoading || !undoPassword.trim()}
-                  className="rounded-xl bg-stone-900 px-4 py-2 text-sm font-bold text-white hover:bg-stone-950 disabled:opacity-50"
-                >
-                  {undoLoading ? "Undoing…" : "Confirm undo"}
-                </button>
-              </div>
-            </form>
-          </div>
-        </div>
+                  <h3
+                    id="undo-last-title"
+                    className="font-heading text-lg font-bold text-amber-900 mb-2"
+                  >
+                    Undo last game
+                  </h3>
+                  <p className="text-sm text-stone-600 mb-4">
+                    This removes the most recent game. To prevent accidental deletes, it
+                    must be confirmed by the winner of the last game.
+                  </p>
+
+                  <form
+                    className="flex flex-col gap-3"
+                    onSubmit={(e) => {
+                      e.preventDefault();
+                      if (undoLoading || !undoPassword.trim()) return;
+                      void undo();
+                    }}
+                  >
+                    <div className="rounded-xl border border-amber-200 bg-amber-50 px-3 py-2 text-sm font-semibold text-amber-900">
+                      Confirm with:{" "}
+                      <span className="font-bold">
+                        {undoApproverLabel ?? "Winner"}
+                      </span>
+                    </div>
+
+                    <div className="relative">
+                      <input
+                        type={showUndoPassword ? "text" : "password"}
+                        autoComplete="off"
+                        value={undoPassword}
+                        onChange={(e) => setUndoPassword(e.target.value)}
+                        placeholder="Enter their password"
+                        className="w-full rounded-xl border border-amber-200 bg-white px-4 py-2.5 pr-12 text-sm text-stone-800 focus:border-amber-500 focus:outline-none"
+                      />
+                      <button
+                        type="button"
+                        onClick={() => setShowUndoPassword((v) => !v)}
+                        className="absolute right-2 top-1/2 -translate-y-1/2 rounded-lg px-2 py-1 text-xs font-bold text-stone-600 hover:bg-amber-50"
+                        aria-label={
+                          showUndoPassword ? "Hide password" : "Show password"
+                        }
+                        title={showUndoPassword ? "Hide" : "Show"}
+                      >
+                        {showUndoPassword ? "🙈" : "👁️"}
+                      </button>
+                    </div>
+
+                    {undoError ? (
+                      <p className="text-sm font-semibold text-red-600">{undoError}</p>
+                    ) : null}
+
+                    <div className="flex gap-2 justify-end mt-2">
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setUndoOpen(false);
+                          setUndoError(null);
+                          setUndoPassword("");
+                          setShowUndoPassword(false);
+                        }}
+                        className="rounded-xl border border-amber-200 px-4 py-2 text-sm font-semibold text-stone-600 hover:bg-amber-50"
+                      >
+                        Cancel
+                      </button>
+                      <button
+                        type="submit"
+                        disabled={undoLoading || !undoPassword.trim()}
+                        className="rounded-xl bg-stone-900 px-4 py-2 text-sm font-bold text-white hover:bg-stone-950 disabled:opacity-50"
+                      >
+                        {undoLoading ? "Undoing…" : "Confirm undo"}
+                      </button>
+                    </div>
+                  </form>
+                </div>
+              </div>,
+              document.body,
+            )
+          : null
       ) : null}
     </section>
   );
