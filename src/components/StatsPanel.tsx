@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import Image from "next/image";
 import { getRandomGif } from "@/lib/gifs";
 
 type PlayerStats = {
@@ -8,7 +9,6 @@ type PlayerStats = {
   name: string;
   wins: number;
   gammonWins: number;
-  backgammonWins: number;
   points: number;
   losses: number;
 };
@@ -80,21 +80,22 @@ export default function StatsPanel({ refreshKey }: { refreshKey?: number }) {
         : null;
 
   const labelFor = (p: PlayerStats) =>
-    p.id === "player1" ? `💅 ${p.name}` :
-    p.id === "player2" ? `💪 ${p.name}` :
-    p.name;
+    p.id === "player1" ? `💅 ${p.name}` : p.id === "player2" ? `💪 ${p.name}` : p.name;
 
   return (
     <section className="rounded-3xl bg-linear-to-br from-white via-amber-50 to-amber-100/80 p-6 sm:p-7 shadow-xl border border-amber-200/70">
       <div className="flex items-center justify-between mb-4">
         <h2 className="font-heading text-xl sm:text-2xl font-bold text-amber-900 flex items-center gap-2">
-          <span className="text-2xl">📊</span> Statistics
+          <span className="text-2xl" aria-hidden>
+            📊
+          </span>{" "}
+          Stats
         </h2>
         <button
           onClick={fetchStats}
           className="text-xs sm:text-sm font-semibold text-amber-700 hover:text-amber-800 px-3 py-1.5 rounded-full bg-white/70 border border-amber-200/70 shadow-sm"
         >
-          Recalculate
+          Refresh
         </button>
       </div>
 
@@ -114,10 +115,7 @@ export default function StatsPanel({ refreshKey }: { refreshKey?: number }) {
             Gammons: <strong className="text-amber-700">{player1.gammonWins}</strong>
           </p>
           <p className="text-stone-600 text-sm">
-            Backgammons: <strong className="text-amber-700">{player1.backgammonWins}</strong>
-          </p>
-          <p className="text-stone-600 text-sm">
-            Points (gammon = 2, backgammon = 3): <strong>{player1.points}</strong>
+            Points (gammon = 2): <strong>{player1.points}</strong>
           </p>
           <p className="text-stone-600 text-sm">
             Losses: <strong>{player1.losses}</strong>
@@ -138,10 +136,7 @@ export default function StatsPanel({ refreshKey }: { refreshKey?: number }) {
             Gammons: <strong className="text-amber-700">{player2.gammonWins}</strong>
           </p>
           <p className="text-stone-600 text-sm">
-            Backgammons: <strong className="text-amber-700">{player2.backgammonWins}</strong>
-          </p>
-          <p className="text-stone-600 text-sm">
-            Points (gammon = 2, backgammon = 3): <strong>{player2.points}</strong>
+            Points (gammon = 2): <strong>{player2.points}</strong>
           </p>
           <p className="text-stone-600 text-sm">
             Losses: <strong>{player2.losses}</strong>
@@ -163,10 +158,13 @@ export default function StatsPanel({ refreshKey }: { refreshKey?: number }) {
 
       {gif && (
         <div className="mt-4 animate-bounce-in">
-          <img
+          <Image
             src={gif}
-            alt="Recalculate"
-            className="rounded-xl max-h-32 object-cover border-2 border-amber-200"
+            alt="Refresh"
+            width={640}
+            height={360}
+            unoptimized
+            className="rounded-xl border-2 border-amber-200 bg-amber-50/60 w-full h-auto aspect-video object-contain"
           />
         </div>
       )}

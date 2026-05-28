@@ -1,9 +1,10 @@
 import { NextResponse } from "next/server";
 import { eq } from "drizzle-orm";
-import { Resend } from "resend";
 import { getDb } from "@/lib/db";
 import { passwordResetTokens, players } from "@/lib/db/schema";
 import { isValidPlayerId } from "@/lib/players";
+import { sendSmtpMail } from "@/lib/mailer";
+import { renderResetPasswordEmail } from "@/lib/email-templates";
 import { generateRawToken, getBaseUrl, hashToken } from "@/lib/password-reset";
 
 export const dynamic = "force-dynamic";
@@ -16,15 +17,6 @@ export async function POST(
     const { id } = await params;
     if (!id || !isValidPlayerId(id)) {
       return NextResponse.json({ error: "Invalid player id" }, { status: 400 });
-    }
-
-    const apiKey = process.env.RESEND_API_KEY?.trim();
-    const from = process.env.EMAIL_FROM?.trim();
-    if (!apiKey || !from) {
-      return NextResponse.json(
-        { error: "Set RESEND_API_KEY and EMAIL_FROM." },
-        { status: 503 },
-      );
     }
 
     const db = getDb();
@@ -61,26 +53,25 @@ export async function POST(
     const base = getBaseUrl();
     const resetUrl = `${base}/reset-password?token=${encodeURIComponent(raw)}`;
 
-    const resend = new Resend(apiKey);
-    const { error: resendError } = await resend.emails.send({
-      from,
-      to,
-      subject: "Reset your password (Backgammon Scoreboard)",
-      html: `
-        <p>Hi${player.name ? ` ${escapeHtml(player.name)}` : ""},</p>
-        <p>Someone requested a new password for this scoreboard account.</p>
-        <p><a href="${resetUrl}">Set a new password</a></p>
-        <p>This link expires in one hour and works only once.</p>
-        <p>If you did not ask for this, you can ignore this email.</p>
-      `,
-    });
-
-    if (resendError) {
-      console.error("Resend error:", resendError);
-      return NextResponse.json(
-        { error: resendError.message || "Could not send email." },
-        { status: 502 },
-      );
+    try {
+      const email = renderResetPasswordEmail({
+        playerName: player.name,
+        resetUrl,
+      });
+      await sendSmtpMail({
+        to,
+        subject: email.subject,
+        html: email.html,
+        text: email.text,
+      });
+    } catch (e) {
+      const msg = e instanceof Error ? e.message : "Could not send email.";
+      console.error("SMTP send error:", e);
+      const status =
+        typeof msg === "string" && msg.startsWith("Missing ")
+          ? 503
+          : 502;
+      return NextResponse.json({ error: msg }, { status });
     }
 
     return NextResponse.json({ ok: true });
@@ -91,12 +82,4 @@ export async function POST(
       { status: 500 },
     );
   }
-}
-
-function escapeHtml(s: string): string {
-  return s
-    .replace(/&/g, "&amp;")
-    .replace(/</g, "&lt;")
-    .replace(/>/g, "&gt;")
-    .replace(/"/g, "&quot;");
 }

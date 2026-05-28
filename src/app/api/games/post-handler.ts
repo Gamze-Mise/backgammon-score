@@ -99,8 +99,17 @@ export async function postGameHandler(req: Request): Promise<NextResponse> {
     }
   }
 
-  const normalizedResult: "normal" | "gammon" | "backgammon" =
-    resultType === "gammon" || resultType === "backgammon" ? resultType : "normal";
+  if (resultType != null && typeof resultType !== "string") {
+    return NextResponse.json({ error: "Invalid resultType" }, { status: 400 });
+  }
+  if (resultType === "backgammon") {
+    return NextResponse.json(
+      { error: "backgammon is not supported" },
+      { status: 400 },
+    );
+  }
+  const normalizedResult: "normal" | "gammon" =
+    resultType === "gammon" ? "gammon" : "normal";
 
   const [inserted] = await db
     .insert(games)

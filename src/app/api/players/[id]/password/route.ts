@@ -3,6 +3,8 @@ import { compare, hash } from "bcryptjs";
 import { getDb } from "@/lib/db";
 import { players } from "@/lib/db/schema";
 import { isValidPlayerId } from "@/lib/players";
+import { sendSmtpMail } from "@/lib/mailer";
+import { renderPasswordChangedEmail } from "@/lib/email-templates";
 import { eq } from "drizzle-orm";
 
 export const dynamic = "force-dynamic";
@@ -79,6 +81,22 @@ export async function PATCH(
       .update(players)
       .set({ passwordHash, mustChangePassword: false })
       .where(eq(players.id, id));
+
+    const to = (player.email ?? "").trim();
+    if (to && to.includes("@")) {
+      try {
+        const email = renderPasswordChangedEmail({ playerName: player.name });
+        await sendSmtpMail({
+          to,
+          subject: email.subject,
+          html: email.html,
+          text: email.text,
+        });
+      } catch (e) {
+        console.error("SMTP send error:", e);
+        // Best-effort only: password change succeeded.
+      }
+    }
 
     return NextResponse.json({ ok: true });
   } catch (e) {

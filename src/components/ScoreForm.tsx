@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useCallback } from "react";
+import Image from "next/image";
 import { getRandomGif } from "@/lib/gifs";
 
 type Player = { id: string; name: string };
@@ -36,13 +37,12 @@ export default function ScoreForm({
   const [changeNewPw, setChangeNewPw] = useState("");
   const [changePwError, setChangePwError] = useState<string | null>(null);
   const [changePwLoading, setChangePwLoading] = useState(false);
+  const [showApprovePw, setShowApprovePw] = useState(false);
+  const [showChangeCurrentPw, setShowChangeCurrentPw] = useState(false);
+  const [showChangeNewPw, setShowChangeNewPw] = useState(false);
 
   const displayName = (p: Player) =>
-    p.id === "player1"
-      ? `💅 ${p.name}`
-      : p.id === "player2"
-        ? `💪 ${p.name}`
-        : p.name;
+    p.id === "player1" ? `💅 ${p.name}` : p.id === "player2" ? `💪 ${p.name}` : p.name;
 
   const submit = useCallback(async () => {
     if (!winnerId) return;
@@ -81,6 +81,7 @@ export default function ScoreForm({
       setReactionType(isSpecial ? "mars" : "win");
       setWinnerId("");
       setApproverPassword("");
+      setShowApprovePw(false);
       setResultType("normal");
       onSuccess();
       if (data.mustChangePassword && data.approverId) {
@@ -104,10 +105,13 @@ export default function ScoreForm({
   return (
     <section className="rounded-3xl bg-linear-to-br from-amber-50 via-orange-50 to-amber-100/90 p-6 sm:p-7 shadow-xl border border-amber-200/70">
       <h2 className="font-heading text-xl sm:text-2xl font-bold text-amber-900 mb-1 flex items-center gap-2">
-        <span className="text-2xl sm:text-3xl">🎲</span> Backgammon result
+        <span className="text-2xl sm:text-3xl" aria-hidden>
+          🎲
+        </span>{" "}
+        Record a result
       </h2>
       <p className="mb-5 text-sm text-stone-600">
-        Select the winner and confirm with the other player&apos;s password.
+        Pick the winner, then confirm with the other player&apos;s password.
       </p>
       <form
         className="flex flex-col gap-5"
@@ -137,10 +141,7 @@ export default function ScoreForm({
                         : "border-amber-200 bg-white/70 hover:bg-amber-50 text-stone-700",
                     ].join(" ")}
                   >
-                    <span className="text-lg sm:text-xl mb-1">
-                      {p.id === "player1" ? "💅" : "💪"}
-                    </span>
-                    <span className="font-semibold">{p.name}</span>
+                    <span className="font-semibold">{displayName(p)}</span>
                   </button>
                 );
               })}
@@ -179,20 +180,30 @@ export default function ScoreForm({
         {winnerId && (
           <div className="rounded-2xl border border-amber-200/80 bg-white/75 p-4 sm:p-5 flex flex-col gap-2">
             <span className="block text-xs font-semibold text-stone-500 uppercase tracking-wide">
-              Approval password (
-              {winnerId === "player1" ? "💪 Husband" : "💅 Wife"})
+              Confirmation password ({displayName(players.find((p) => p.id !== winnerId) ?? { id: "", name: "Other player" })})
             </span>
-            <input
-              type="password"
-              autoComplete="off"
-              value={approverPassword}
-              onChange={(e) => setApproverPassword(e.target.value)}
-              className="w-full rounded-2xl border border-amber-200 bg-white/80 px-4 py-2.5 text-sm text-stone-800 focus:border-amber-500 focus:outline-none focus:ring-2 focus:ring-amber-200"
-              placeholder="Enter other player's password"
-            />
+            <div className="relative">
+              <input
+                type={showApprovePw ? "text" : "password"}
+                autoComplete="off"
+                value={approverPassword}
+                onChange={(e) => setApproverPassword(e.target.value)}
+                className="w-full rounded-2xl border border-amber-200 bg-white/80 px-4 py-2.5 pr-12 text-sm text-stone-800 focus:border-amber-500 focus:outline-none focus:ring-2 focus:ring-amber-200"
+                placeholder="Enter the other player's password"
+              />
+              <button
+                type="button"
+                onClick={() => setShowApprovePw((v) => !v)}
+                className="absolute right-2 top-1/2 -translate-y-1/2 rounded-xl px-2 py-1 text-xs font-bold text-stone-600 hover:bg-amber-50"
+                aria-label={showApprovePw ? "Hide password" : "Show password"}
+                title={showApprovePw ? "Hide" : "Show"}
+              >
+                {showApprovePw ? "🙈" : "👁️"}
+              </button>
+            </div>
             <p className="text-[11px] text-stone-500">
-              Default first-time password is 12345. You&apos;ll be asked to set
-              a new one after saving.
+              First-time password is <strong>12345</strong>. After a successful save,
+              you&apos;ll be prompted to change it.
             </p>
           </div>
         )}
@@ -231,35 +242,57 @@ export default function ScoreForm({
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
           <div className="w-full max-w-sm rounded-2xl bg-white p-6 shadow-xl border border-amber-200">
             <h3 className="font-heading text-lg font-bold text-amber-900 mb-2">
-              Set new password for {displayName(changePasswordFor)}
+              Change password for {displayName(changePasswordFor)}
             </h3>
             <p className="text-sm text-stone-600 mb-4">
-              You’re still using the default password (12345). Set a new one now
-              (one-time).
+              You&apos;re still using the default password (<strong>12345</strong>). Please
+              set a new one now (one-time).
             </p>
             <div className="flex flex-col gap-3">
-              <input
-                type="password"
-                autoComplete="off"
-                value={changeCurrentPw}
-                onChange={(e) => {
-                  setChangeCurrentPw(e.target.value);
-                  setChangePwError(null);
-                }}
-                placeholder="Current password (e.g. 12345)"
-                className="w-full rounded-xl border border-amber-200 bg-white px-4 py-2.5 text-sm text-stone-800 focus:border-amber-500 focus:outline-none"
-              />
-              <input
-                type="password"
-                autoComplete="new-password"
-                value={changeNewPw}
-                onChange={(e) => {
-                  setChangeNewPw(e.target.value);
-                  setChangePwError(null);
-                }}
-                placeholder="New password"
-                className="w-full rounded-xl border border-amber-200 bg-white px-4 py-2.5 text-sm text-stone-800 focus:border-amber-500 focus:outline-none"
-              />
+              <div className="relative">
+                <input
+                  type={showChangeCurrentPw ? "text" : "password"}
+                  autoComplete="off"
+                  value={changeCurrentPw}
+                  onChange={(e) => {
+                    setChangeCurrentPw(e.target.value);
+                    setChangePwError(null);
+                  }}
+                  placeholder="Current password (e.g. 12345)"
+                  className="w-full rounded-xl border border-amber-200 bg-white px-4 py-2.5 pr-12 text-sm text-stone-800 focus:border-amber-500 focus:outline-none"
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowChangeCurrentPw((v) => !v)}
+                  className="absolute right-2 top-1/2 -translate-y-1/2 rounded-lg px-2 py-1 text-xs font-bold text-stone-600 hover:bg-amber-50"
+                  aria-label={showChangeCurrentPw ? "Hide password" : "Show password"}
+                  title={showChangeCurrentPw ? "Hide" : "Show"}
+                >
+                  {showChangeCurrentPw ? "🙈" : "👁️"}
+                </button>
+              </div>
+              <div className="relative">
+                <input
+                  type={showChangeNewPw ? "text" : "password"}
+                  autoComplete="new-password"
+                  value={changeNewPw}
+                  onChange={(e) => {
+                    setChangeNewPw(e.target.value);
+                    setChangePwError(null);
+                  }}
+                  placeholder="New password"
+                  className="w-full rounded-xl border border-amber-200 bg-white px-4 py-2.5 pr-12 text-sm text-stone-800 focus:border-amber-500 focus:outline-none"
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowChangeNewPw((v) => !v)}
+                  className="absolute right-2 top-1/2 -translate-y-1/2 rounded-lg px-2 py-1 text-xs font-bold text-stone-600 hover:bg-amber-50"
+                  aria-label={showChangeNewPw ? "Hide password" : "Show password"}
+                  title={showChangeNewPw ? "Hide" : "Show"}
+                >
+                  {showChangeNewPw ? "🙈" : "👁️"}
+                </button>
+              </div>
               {changePwError && (
                 <p className="text-sm font-semibold text-red-600">
                   {changePwError}
@@ -272,6 +305,8 @@ export default function ScoreForm({
                     setChangePasswordFor(null);
                     setChangeCurrentPw("");
                     setChangeNewPw("");
+                    setShowChangeCurrentPw(false);
+                    setShowChangeNewPw(false);
                     setChangePwError(null);
                   }}
                   className="rounded-xl border border-amber-200 px-4 py-2 text-sm font-semibold text-stone-600 hover:bg-amber-50"
@@ -308,6 +343,8 @@ export default function ScoreForm({
                       setChangePasswordFor(null);
                       setChangeCurrentPw("");
                       setChangeNewPw("");
+                      setShowChangeCurrentPw(false);
+                      setShowChangeNewPw(false);
                       setChangePwError(null);
                       onSuccess();
                     } finally {
@@ -325,31 +362,52 @@ export default function ScoreForm({
       )}
 
       {reactionGif && (
-        <div className="mt-4 animate-bounce-in">
-          {reactionType === "mars" && (
-            <p className="text-sm font-semibold text-stone-600 mb-2">🔥 Gammon.</p>
-          )}
-          <img
-            src={reactionGif}
-            alt="Reaction"
-            onError={() => {
-              if (!reactionType) {
-                setReactionGif(fallbackGif);
-                return;
-              }
-              if (gifRetryCount >= 8) {
-                setReactionGif(fallbackGif);
-                return;
-              }
-              const fallbackType =
-                reactionType === "mars" && gifRetryCount < 4
-                  ? "mars"
-                  : "scoreEntered";
-              setGifRetryCount((count) => count + 1);
-              setReactionGif(getRandomGif(fallbackType));
-            }}
-            className="rounded-xl max-h-40 object-cover border-2 border-amber-200"
-          />
+        <div className="fixed left-1/2 -translate-x-1/2 top-[72px] sm:top-[84px] z-50 w-[min(560px,calc(100vw-2rem))] animate-bounce-in">
+          <div className="rounded-2xl border border-amber-200 bg-white/85 shadow-xl backdrop-blur px-3 py-2">
+            <div className="flex items-center justify-between gap-3">
+              <p className="text-sm font-semibold text-stone-700">
+                {reactionType === "mars" ? "Gammon!" : "Score saved"}
+              </p>
+              <button
+                type="button"
+                onClick={() => {
+                  setReactionGif(null);
+                  setReactionType(null);
+                  setGifRetryCount(0);
+                }}
+                className="rounded-lg px-2 py-1 text-xs font-bold text-stone-600 hover:bg-stone-100"
+                aria-label="Dismiss"
+              >
+                ✕
+              </button>
+            </div>
+            <div className="mt-2">
+              <Image
+                src={reactionGif}
+                alt="Reaction"
+                width={640}
+                height={360}
+                onError={() => {
+                  if (!reactionType) {
+                    setReactionGif(fallbackGif);
+                    return;
+                  }
+                  if (gifRetryCount >= 8) {
+                    setReactionGif(fallbackGif);
+                    return;
+                  }
+                  const fallbackType =
+                    reactionType === "mars" && gifRetryCount < 4
+                      ? "mars"
+                      : "scoreEntered";
+                  setGifRetryCount((count) => count + 1);
+                  setReactionGif(getRandomGif(fallbackType));
+                }}
+                unoptimized
+                className="rounded-xl border border-amber-200 bg-amber-50/60 w-full h-auto aspect-video object-contain"
+              />
+            </div>
+          </div>
         </div>
       )}
     </section>

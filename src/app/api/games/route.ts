@@ -50,26 +50,8 @@ export async function POST(req: Request) {
 }
 
 export async function DELETE() {
-  const run = async () => {
-    const db = getDb();
-    const [last] = await db
-      .select()
-      .from(games)
-      .orderBy(desc(games.id))
-      .limit(1);
-
-    if (!last) {
-      return NextResponse.json({ error: "No games to undo" }, { status: 400 });
-    }
-
-    await db.delete(games).where(eq(games.id, last.id));
-    return NextResponse.json(last);
-  };
-  return run().catch((e) => {
-    console.error(e);
-    return NextResponse.json(
-      { error: "Failed to undo last game" },
-      { status: 500 },
-    );
-  });
+  return NextResponse.json(
+    { error: "Undo requires confirmation. Use POST /api/games/undo." },
+    { status: 405 },
+  );
 }

@@ -60,7 +60,7 @@ export default function PasswordResetTrigger({ players }: { players: Player[] })
         }}
         className="shrink-0 rounded-full border border-amber-300/80 bg-white/90 px-3 py-1.5 text-xs sm:text-sm font-semibold text-amber-900 shadow-sm hover:bg-amber-50 transition"
       >
-        Change password
+        Reset password
       </button>
 
       {open &&
@@ -83,10 +83,10 @@ export default function PasswordResetTrigger({ players }: { players: Player[] })
                 id="reset-password-title"
                 className="font-heading text-lg font-bold text-amber-900 mb-1"
               >
-                Reset password by email
+                Reset password
               </h3>
               <p className="text-sm text-stone-600 mb-4">
-                We&apos;ll email a one-time link. Choose whose password this is:
+                We&apos;ll email a one-time link. Choose the player:
               </p>
               <div className="flex flex-col gap-2 mb-4">
                 {players.map((p) => {

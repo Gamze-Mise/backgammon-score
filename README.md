@@ -49,6 +49,17 @@ npm run dev
 
 Open [http://localhost:3000](http://localhost:3000).
 
+### Email (SMTP)
+
+To enable password reset emails (and password-change notifications), set:
+
+- `ADMIN_EMAIL`: sender address (example: `sd.name.blabla@gmail.com`)
+- `SMTP_HOST`: SMTP server hostname
+- `SMTP_PORT`: SMTP port (e.g. `465` for SMTPS, `587` for STARTTLS)
+- `SMTP_USER`: SMTP username
+- `SMTP_PASS`: SMTP password / app password
+- `SMTP_SECURE` (optional): set to `true` to force SMTPS (defaults to `true` if port is `465`)
+
 ### Deploy (Vercel)
 
 Import the repo, add `DATABASE_URL`, deploy. Tables must already exist in Neon.
@@ -57,25 +68,25 @@ Import the repo, add `DATABASE_URL`, deploy. Tables must already exist in Neon.
 
 ## Scripts
 
-| Command | Description |
-|---------|-------------|
-| `npm run dev` | Dev server |
-| `npm run build` | Production build |
+| Command         | Description          |
+| --------------- | -------------------- |
+| `npm run dev`   | Dev server           |
+| `npm run build` | Production build     |
 | `npm run start` | Run production build |
 
 ---
 
 ## API
 
-| Method | Endpoint | Description |
-|--------|----------|-------------|
-| GET | `/api/players` | List players (id, name, mustChangePassword) |
-| PATCH | `/api/players/[id]` | Update name. Body: `{ "name": "..." }`. Id: `player1` or `player2`. |
-| PATCH | `/api/players/[id]/password` | Change password. Body: `{ "currentPassword", "newPassword" }`. |
-| GET | `/api/games` | List games (last 100) |
-| POST | `/api/games` | Create game. Body: winnerId, loserId, resultType, approverId, password. |
-| DELETE | `/api/games` | Remove last game |
-| GET | `/api/stats` | Aggregated stats (wins, gammons, backgammons, points, losses per player) |
+| Method | Endpoint                     | Description                                                              |
+| ------ | ---------------------------- | ------------------------------------------------------------------------ |
+| GET    | `/api/players`               | List players (id, name, mustChangePassword)                              |
+| PATCH  | `/api/players/[id]`          | Update name. Body: `{ "name": "..." }`. Id: `player1` or `player2`.      |
+| PATCH  | `/api/players/[id]/password` | Change password. Body: `{ "currentPassword", "newPassword" }`.           |
+| GET    | `/api/games`                 | List games (last 100)                                                    |
+| POST   | `/api/games`                 | Create game. Body: winnerId, loserId, resultType, approverId, password.  |
+| DELETE | `/api/games`                 | Remove last game                                                         |
+| GET    | `/api/stats`                 | Aggregated stats (wins, gammons, backgammons, points, losses per player) |
 
 Scoring: normal = 1 pt, gammon = 2 pts, backgammon = 3 pts. First-time password is `12345`; user is prompted to change it once after saving a game.
 

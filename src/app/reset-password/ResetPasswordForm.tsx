@@ -10,6 +10,8 @@ export default function ResetPasswordForm() {
 
   const [pw1, setPw1] = useState("");
   const [pw2, setPw2] = useState("");
+  const [showPw1, setShowPw1] = useState(false);
+  const [showPw2, setShowPw2] = useState(false);
   const [loading, setLoading] = useState(false);
   const [err, setErr] = useState<string | null>(null);
   const [done, setDone] = useState(false);
@@ -97,29 +99,51 @@ export default function ResetPasswordForm() {
           <label className="block text-xs font-semibold text-stone-500 uppercase tracking-wide mb-1">
             New password
           </label>
-          <input
-            type="password"
-            autoComplete="new-password"
-            value={pw1}
-            onChange={(e) => setPw1(e.target.value)}
-            className="w-full rounded-xl border border-amber-200 bg-white px-4 py-2.5 text-sm text-stone-800 focus:border-amber-500 focus:outline-none focus:ring-2 focus:ring-amber-200"
-            required
-            minLength={4}
-          />
+          <div className="relative">
+            <input
+              type={showPw1 ? "text" : "password"}
+              autoComplete="new-password"
+              value={pw1}
+              onChange={(e) => setPw1(e.target.value)}
+              className="w-full rounded-xl border border-amber-200 bg-white px-4 py-2.5 pr-12 text-sm text-stone-800 focus:border-amber-500 focus:outline-none focus:ring-2 focus:ring-amber-200"
+              required
+              minLength={4}
+            />
+            <button
+              type="button"
+              onClick={() => setShowPw1((v) => !v)}
+              className="absolute right-2 top-1/2 -translate-y-1/2 rounded-lg px-2 py-1 text-xs font-bold text-stone-600 hover:bg-amber-50"
+              aria-label={showPw1 ? "Hide password" : "Show password"}
+              title={showPw1 ? "Hide" : "Show"}
+            >
+              {showPw1 ? "🙈" : "👁️"}
+            </button>
+          </div>
         </div>
         <div>
           <label className="block text-xs font-semibold text-stone-500 uppercase tracking-wide mb-1">
             Confirm new password
           </label>
-          <input
-            type="password"
-            autoComplete="new-password"
-            value={pw2}
-            onChange={(e) => setPw2(e.target.value)}
-            className="w-full rounded-xl border border-amber-200 bg-white px-4 py-2.5 text-sm text-stone-800 focus:border-amber-500 focus:outline-none focus:ring-2 focus:ring-amber-200"
-            required
-            minLength={4}
-          />
+          <div className="relative">
+            <input
+              type={showPw2 ? "text" : "password"}
+              autoComplete="new-password"
+              value={pw2}
+              onChange={(e) => setPw2(e.target.value)}
+              className="w-full rounded-xl border border-amber-200 bg-white px-4 py-2.5 pr-12 text-sm text-stone-800 focus:border-amber-500 focus:outline-none focus:ring-2 focus:ring-amber-200"
+              required
+              minLength={4}
+            />
+            <button
+              type="button"
+              onClick={() => setShowPw2((v) => !v)}
+              className="absolute right-2 top-1/2 -translate-y-1/2 rounded-lg px-2 py-1 text-xs font-bold text-stone-600 hover:bg-amber-50"
+              aria-label={showPw2 ? "Hide password" : "Show password"}
+              title={showPw2 ? "Hide" : "Show"}
+            >
+              {showPw2 ? "🙈" : "👁️"}
+            </button>
+          </div>
         </div>
       </div>
       {err && (
